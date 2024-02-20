@@ -18,6 +18,14 @@ export class DistributedObservabilityStack extends cdk.Stack {
 
     const eventBus = new events.EventBus(this, "SampleEventBus");
 
+    const table = new dynamodb.Table(this, "SampleTable", {
+      partitionKey: { name: "_PK", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "_SK", type: dynamodb.AttributeType.STRING },
+      timeToLiveAttribute: "_TTL",
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      stream: dynamodb.StreamViewType.NEW_IMAGE,
+    });
+
     const queueA = new sqs.Queue(this, "sample-queue-a", {
       deadLetterQueue: {
         queue: new sqs.Queue(this, "sample-queue-a-dlq"),
@@ -27,16 +35,8 @@ export class DistributedObservabilityStack extends cdk.Stack {
 
     const rule = new events.Rule(this, "SampleQueueARule", {
       eventBus: eventBus,
-      eventPattern: { source: ["trigger-a"] },
+      eventPattern: { source: ["sample-app"], detailType: ["EventA"] },
       targets: [new targets.SqsQueue(queueA)],
-    });
-
-    const table = new dynamodb.Table(this, "SampleTable", {
-      partitionKey: { name: "_PK", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "_SK", type: dynamodb.AttributeType.STRING },
-      timeToLiveAttribute: "_TTL",
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      stream: dynamodb.StreamViewType.NEW_IMAGE,
     });
 
     const lambdaA = new NodejsFunction(this, "SampleLambdaA", {
@@ -57,7 +57,10 @@ export class DistributedObservabilityStack extends cdk.Stack {
         runtime: aws_lambda.Runtime.NODEJS_20_X,
         timeout: Duration.seconds(10),
         handler: "functionHandler",
-        environment: { DDB_TABLE_NAME: table.tableName },
+        environment: {
+          DDB_TABLE_NAME: table.tableName,
+          EB_BUS_NAME: eventBus.eventBusName,
+        },
       }
     );
     table.grantStreamRead(streamListenerLambda);
@@ -67,5 +70,27 @@ export class DistributedObservabilityStack extends cdk.Stack {
         startingPosition: aws_lambda.StartingPosition.LATEST,
       })
     );
+    eventBus.grantPutEventsTo(streamListenerLambda);
+
+    const queueB = new sqs.Queue(this, "sample-queue-b", {
+      deadLetterQueue: {
+        queue: new sqs.Queue(this, "sample-queue-b-dlq"),
+        maxReceiveCount: 3,
+      },
+    });
+
+    const ruleB = new events.Rule(this, "SampleQueueBRule", {
+      eventBus: eventBus,
+      eventPattern: { source: ["sample-app"], detailType: ["EventB"] },
+      targets: [new targets.SqsQueue(queueB)],
+    });
+
+    const lambdaB = new NodejsFunction(this, "SampleLambdaB", {
+      entry: "src/lambda-b.ts",
+      runtime: aws_lambda.Runtime.NODEJS_20_X,
+      timeout: Duration.seconds(10),
+      handler: "functionHandler",
+    });
+    lambdaB.addEventSource(new SqsEventSource(queueB));
   }
 }

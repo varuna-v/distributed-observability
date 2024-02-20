@@ -1,6 +1,6 @@
-trigger-a
+sample-app
 
-TriggerA
+EventA
 
 {
   "version": "0",
