@@ -1,4 +1,6 @@
 import { SQSEvent, Context, SQSHandler, SQSRecord } from "aws-lambda";
+import DynamoDB = require("aws-sdk/clients/dynamodb");
+import { v4 as uuidv4 } from "uuid";
 
 export const functionHandler: SQSHandler = async (
   event: SQSEvent,
@@ -13,8 +15,19 @@ export const functionHandler: SQSHandler = async (
 async function processMessageAsync(message: SQSRecord): Promise<any> {
   try {
     console.log(`Processed message ${message.body}`);
-    // TODO: Do interesting work based on the new message
-    await Promise.resolve(1); //Placeholder for actual async work
+    let dynamodb = new DynamoDB();
+
+    let tableName = process.env.DDB_TABLE_NAME || "";
+    let item: DynamoDB.PutItemInput = {
+      TableName: tableName,
+      Item: {
+        _PK: { S: uuidv4() },
+        _SK: { S: "4" },
+        Data: { S: message.body },
+      },
+    };
+
+    await dynamodb.putItem(item).promise();
   } catch (err) {
     console.error("An error occurred");
     throw err;

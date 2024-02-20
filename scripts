@@ -1,0 +1,2 @@
+cdk diff --profile=gomapps  
+cdk deploy --profile=gomapps

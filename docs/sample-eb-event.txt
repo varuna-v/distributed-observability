@@ -1,0 +1,20 @@
+trigger-a
+
+TriggerA
+
+{
+  "version": "0",
+  "id": "UUID",
+  "detail-type": "TriggerA",
+  "source": "event source",
+  "account": "ARN",
+  "time": "timestamp",
+  "region": "region",
+  "resources": [
+    "ARN"
+  ],
+  "detail": {
+    "key": "value"
+  }
+}
+

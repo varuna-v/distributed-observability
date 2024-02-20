@@ -56,6 +56,7 @@ export class DistributedObservabilityStack extends cdk.Stack {
         entry: "src/streamListener.ts",
         runtime: aws_lambda.Runtime.NODEJS_20_X,
         timeout: Duration.seconds(10),
+        handler: "functionHandler",
         environment: { DDB_TABLE_NAME: table.tableName },
       }
     );
