@@ -1,6 +1,7 @@
 import { SQSEvent, Context, SQSHandler, SQSRecord } from "aws-lambda";
 import DynamoDB = require("aws-sdk/clients/dynamodb");
-import { v4 as uuidv4 } from "uuid";
+import { setTag } from "../helpers/observability/spans/set-tag";
+import { marshall } from "@aws-sdk/util-dynamodb";
 
 export const functionHandler: SQSHandler = async (
   event: SQSEvent,
@@ -15,16 +16,32 @@ export const functionHandler: SQSHandler = async (
 async function processMessageAsync(message: SQSRecord): Promise<any> {
   try {
     console.log(`Processed message ${message.body}`);
+
+    let body = JSON.parse(message.body);
+
+    let customerId = body.detail.detail.customerId || "";
+    console.log("CustomerId:", customerId);
+    if (customerId) {
+      setTag({ name: "customerId", value: customerId });
+    }
+    const keys = {
+      _PK: customerId,
+      _SK: "4",
+    };
+    const data = JSON.parse(message.body);
+    const recordToPut = {
+      ...keys,
+      ...data,
+    };
+    console.log("Record to put:", recordToPut);
+    var formattedItem = marshall(recordToPut);
+    console.log("Formatted item:", formattedItem);
     let dynamodb = new DynamoDB();
 
     let tableName = process.env.DDB_TABLE_NAME || "";
     let item: DynamoDB.PutItemInput = {
       TableName: tableName,
-      Item: {
-        _PK: { S: uuidv4() },
-        _SK: { S: "4" },
-        Data: { S: message.body },
-      },
+      Item: formattedItem,
     };
 
     await dynamodb.putItem(item).promise();

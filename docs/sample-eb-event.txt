@@ -14,7 +14,8 @@ EventA
     "ARN"
   ],
   "detail": {
-    "key": "value"
+    "version": "3.0",
+    "customerId": "92427d13-d3ec-4e90-b940-ccef0ac1d4fc"
   }
 }
 

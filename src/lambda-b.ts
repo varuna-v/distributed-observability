@@ -4,7 +4,7 @@ export const functionHandler: SQSHandler = async (
   event: SQSEvent,
   context: Context
 ): Promise<void> => {
-  console.log("Entered");
+  console.log("Entered: ", event);
   for (const message of event.Records) {
     console.log("Received event:", JSON.stringify(message.body, null, 2));
   }

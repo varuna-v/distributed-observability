@@ -5,17 +5,18 @@
     "distributed-observability": "bin/distributed-observability.js"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
+    "build": "cdk synth",
     "test": "jest",
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@datadog/datadog-ci": "^2.30.1",
     "@types/aws-lambda": "^8.10.134",
     "@types/jest": "^29.5.12",
     "@types/node": "20.11.16",
     "@types/uuid": "^9.0.8",
     "aws-cdk": "2.128.0",
+    "datadog-cdk-constructs-v2": "^1.12.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
@@ -23,10 +24,14 @@
   },
   "dependencies": {
     "@aws-sdk/client-eventbridge": "^3.515.0",
+    "@aws-sdk/util-dynamodb": "^3.518.0",
     "aws-cdk-lib": "2.128.0",
     "aws-lambda": "^1.0.7",
     "constructs": "^10.0.0",
+    "datadog-lambda-js": "^8.109.0",
+    "dd-trace": "^5.4.0",
     "esbuild": "^0.19.7",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "vitest": "^1.6.0"
   }
 }
