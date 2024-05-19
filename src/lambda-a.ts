@@ -20,7 +20,6 @@ async function processMessageAsync(message: SQSRecord): Promise<any> {
     let body = JSON.parse(message.body);
 
     let customerId = body.detail.detail.customerId || "";
-    console.log("CustomerId:", customerId);
     if (customerId) {
       setTag({ name: "customerId", value: customerId });
     }
@@ -33,9 +32,7 @@ async function processMessageAsync(message: SQSRecord): Promise<any> {
       ...keys,
       ...data,
     };
-    console.log("Record to put:", recordToPut);
     var formattedItem = marshall(recordToPut);
-    console.log("Formatted item:", formattedItem);
     let dynamodb = new DynamoDB();
 
     let tableName = process.env.DDB_TABLE_NAME || "";

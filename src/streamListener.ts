@@ -15,19 +15,15 @@ export const functionHandler: DynamoDBStreamHandler = async (
     console.log("Received event details:", JSON.stringify(event, null, 2));
     let newImageRaw = event.Records[0].dynamodb?.NewImage || {};
 
-    console.log("newImageRaw:", newImageRaw);
     const newImage = unmarshall(
       newImageRaw as { [key: string]: AttributeValue }
     );
 
     console.log("finished unmarshalling:", newImage);
 
-    console.log("customerId", newImage.detail.detail.customerId);
     setTag({ name: "customerId", value: newImage.detail.detail.customerId });
-    //!! start here - get customer ID from newImage and add a span tag for it
 
     const eventBridgeClient = new EventBridgeClient({ region: "eu-west-1" });
-    console.log("instantiated event bus");
 
     let busName = process.env.EB_BUS_NAME || "";
     const putEventsCommand = new PutEventsCommand({
