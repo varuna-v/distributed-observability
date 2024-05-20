@@ -85,6 +85,7 @@ export class DistributedObservabilityStack extends cdk.Stack {
         environment: {
           DDB_TABLE_NAME: table.tableName,
           EB_BUS_NAME: eventBus.eventBusName,
+          DD_TRACE_EXTRACTOR: "index.exportTraceData",
         },
         bundling: {
           externalModules: ["datadog-lambda-js", "dd-trace", "@aws-sdk/*"],

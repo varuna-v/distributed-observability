@@ -2,6 +2,7 @@ import { SQSEvent, Context, SQSHandler, SQSRecord } from "aws-lambda";
 import DynamoDB = require("aws-sdk/clients/dynamodb");
 import { setTag } from "../helpers/observability/spans/set-tag";
 import { marshall } from "@aws-sdk/util-dynamodb";
+const { getTraceHeaders } = require("datadog-lambda-js");
 
 export const functionHandler: SQSHandler = async (
   event: SQSEvent,
@@ -28,9 +29,13 @@ async function processMessageAsync(message: SQSRecord): Promise<any> {
       _SK: "4",
     };
     const data = JSON.parse(message.body);
+
+    const traceData = getTraceHeaders();
+
     const recordToPut = {
       ...keys,
       ...data,
+      ddTraceData: traceData,
     };
     var formattedItem = marshall(recordToPut);
     let dynamodb = new DynamoDB();

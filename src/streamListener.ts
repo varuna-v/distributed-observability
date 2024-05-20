@@ -6,6 +6,7 @@ import {
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { setTag } from "../helpers/observability";
+export { exportTraceData } from "./dd-custom-extractor";
 
 export const functionHandler: DynamoDBStreamHandler = async (
   event: DynamoDBStreamEvent
@@ -13,13 +14,11 @@ export const functionHandler: DynamoDBStreamHandler = async (
   console.log("hello from lambda");
   try {
     console.log("Received event details:", JSON.stringify(event, null, 2));
-    let newImageRaw = event.Records[0].dynamodb?.NewImage || {};
 
+    let newImageRaw = event.Records[0].dynamodb?.NewImage || {};
     const newImage = unmarshall(
       newImageRaw as { [key: string]: AttributeValue }
     );
-
-    console.log("finished unmarshalling:", newImage);
 
     setTag({ name: "customerId", value: newImage.detail.detail.customerId });
 
